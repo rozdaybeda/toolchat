@@ -1,0 +1,106 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "clang-x64-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-windows-static",
+        "VCPKG_INSTALLED_DIR": "${sourceDir}/build/vcpkg_installed"
+      },
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "environment": {
+        "PATH": "$penv{ProgramFiles}/LLVM/bin;$penv{PATH}"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": ["Windows"]
+        }
+      }
+    },
+    {
+      "name": "clang-x64-debug",
+      "displayName": "Clang x64 Debug",
+      "inherits": "clang-x64-base",
+      "binaryDir": "${sourceDir}/build/clang-x64-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "clang-x64-release",
+      "displayName": "Clang x64 Release",
+      "inherits": "clang-x64-base",
+      "binaryDir": "${sourceDir}/build/clang-x64-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "ON"
+      }
+    },
+    {
+      "name": "clang-x64-relwithdebinfo",
+      "displayName": "Clang x64 RelWithDebInfo",
+      "inherits": "clang-x64-base",
+      "binaryDir": "${sourceDir}/build/clang-x64-relwithdebinfo",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "clang-x64-vulkan-release",
+      "displayName": "Clang x64 Release (Vulkan)",
+      "inherits": "clang-x64-base",
+      "binaryDir": "${sourceDir}/build/clang-x64-vulkan-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "ON",
+        "VCPKG_MANIFEST_FEATURES": "vulkan"
+      }
+    },
+    {
+      "name": "clang-x64-vulkan-relwithdebinfo",
+      "displayName": "Clang x64 RelWithDebInfo (Vulkan)",
+      "inherits": "clang-x64-base",
+      "binaryDir": "${sourceDir}/build/clang-x64-vulkan-relwithdebinfo",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "VCPKG_MANIFEST_FEATURES": "vulkan"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "clang-x64-debug",
+      "configurePreset": "clang-x64-debug"
+    },
+    {
+      "name": "clang-x64-release",
+      "configurePreset": "clang-x64-release"
+    },
+    {
+      "name": "clang-x64-relwithdebinfo",
+      "configurePreset": "clang-x64-relwithdebinfo"
+    },
+    {
+      "name": "clang-x64-vulkan-release",
+      "configurePreset": "clang-x64-vulkan-release"
+    },
+    {
+      "name": "clang-x64-vulkan-relwithdebinfo",
+      "configurePreset": "clang-x64-vulkan-relwithdebinfo"
+    }
+  ]
+}

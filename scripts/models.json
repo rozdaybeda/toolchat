@@ -1,0 +1,104 @@
+{
+  "_comment": "Shared model catalog for toolchat — read by both scripts/download_model.py and the C++ app (catalog.cpp) so there is a single source of truth. 'dir'/'file' are relative to the models/ folder; 'repo' is the Hugging Face repo the file is fetched from.",
+  "models": [
+    {
+      "key": "qwen35-4b",
+      "name": "Qwen3.5-4B",
+      "repo": "unsloth/Qwen3.5-4B-GGUF",
+      "file": "Qwen3.5-4B-Q4_K_M.gguf",
+      "dir": "Qwen3.5-4B-Q4_K_M",
+      "size": "2.7 GB",
+      "desc": "RECOMMENDED — best tool calling (needs llama.cpp b9871+)"
+    },
+    {
+      "key": "qwen35-2b",
+      "name": "Qwen3.5-2B",
+      "repo": "unsloth/Qwen3.5-2B-GGUF",
+      "file": "Qwen3.5-2B-Q4_K_M.gguf",
+      "dir": "Qwen3.5-2B-Q4_K_M",
+      "size": "1.5 GB",
+      "desc": "Lighter Qwen3.5 for weaker CPUs (needs llama.cpp b9871+)"
+    },
+    {
+      "key": "qwen35-0.8b",
+      "name": "Qwen3.5-0.8B",
+      "repo": "unsloth/Qwen3.5-0.8B-GGUF",
+      "file": "Qwen3.5-0.8B-Q4_K_M.gguf",
+      "dir": "Qwen3.5-0.8B-Q4_K_M",
+      "size": "0.6 GB",
+      "desc": "Smallest / fastest Qwen3.5 (needs llama.cpp b9871+)"
+    },
+    {
+      "key": "qwen3-4b",
+      "name": "Qwen3-4B",
+      "repo": "unsloth/Qwen3-4B-GGUF",
+      "file": "Qwen3-4B-Q4_K_M.gguf",
+      "dir": "Qwen3-4B-Q4_K_M",
+      "size": "2.5 GB",
+      "desc": "Max accuracy (100% on the benchmark); works on any recent llama.cpp"
+    },
+    {
+      "key": "qwen25-3b",
+      "name": "Qwen2.5-3B-Instruct",
+      "repo": "bartowski/Qwen2.5-3B-Instruct-GGUF",
+      "file": "Qwen2.5-3B-Instruct-Q4_K_M.gguf",
+      "dir": "Qwen2.5-3B-Instruct-Q4_K_M",
+      "size": "1.9 GB",
+      "desc": "Fast, but over-eager (calls tools when it shouldn't)"
+    },
+    {
+      "key": "qwen25-1.5b",
+      "name": "Qwen2.5-1.5B-Instruct",
+      "repo": "bartowski/Qwen2.5-1.5B-Instruct-GGUF",
+      "file": "Qwen2.5-1.5B-Instruct-Q4_K_M.gguf",
+      "dir": "Qwen2.5-1.5B-Instruct-Q4_K_M",
+      "size": "1.0 GB",
+      "desc": "Speed/accuracy sweet spot (90.5%, 4x faster than Qwen3-4B)"
+    },
+    {
+      "key": "qwen25-0.5b",
+      "name": "Qwen2.5-0.5B-Instruct",
+      "repo": "bartowski/Qwen2.5-0.5B-Instruct-GGUF",
+      "file": "Qwen2.5-0.5B-Instruct-Q4_K_M.gguf",
+      "dir": "Qwen2.5-0.5B-Instruct-Q4_K_M",
+      "size": "0.4 GB",
+      "desc": "Fastest, least reliable tool calls"
+    },
+    {
+      "key": "gemma4-e4b",
+      "name": "Gemma 4 E4B-it",
+      "repo": "unsloth/gemma-4-E4B-it-GGUF",
+      "file": "gemma-4-E4B-it-Q4_K_M.gguf",
+      "dir": "gemma-4-E4B-it-Q4_K_M",
+      "size": "2.9 GB",
+      "desc": "Google Gemma 4 (~4B), native function calling (needs llama.cpp b9871+)"
+    },
+    {
+      "key": "gemma4-e2b",
+      "name": "Gemma 4 E2B-it",
+      "repo": "unsloth/gemma-4-E2B-it-GGUF",
+      "file": "gemma-4-E2B-it-Q4_K_M.gguf",
+      "dir": "gemma-4-E2B-it-Q4_K_M",
+      "size": "1.5 GB",
+      "desc": "Google Gemma 4 (~2B), smaller edge model (needs llama.cpp b9871+)"
+    },
+    {
+      "key": "gemma3-4b",
+      "name": "Gemma 3 4B-it",
+      "repo": "unsloth/gemma-3-4b-it-GGUF",
+      "file": "gemma-3-4b-it-Q4_K_M.gguf",
+      "dir": "gemma-3-4b-it-Q4_K_M",
+      "size": "2.5 GB",
+      "desc": "Google Gemma 3 (4B), prior generation (prompt-based tool calling)"
+    },
+    {
+      "key": "gemma3-1b",
+      "name": "Gemma 3 1B-it",
+      "repo": "unsloth/gemma-3-1b-it-GGUF",
+      "file": "gemma-3-1b-it-Q4_K_M.gguf",
+      "dir": "gemma-3-1b-it-Q4_K_M",
+      "size": "0.8 GB",
+      "desc": "Google Gemma 3 (1B), smallest prior-gen edge model"
+    }
+  ]
+}

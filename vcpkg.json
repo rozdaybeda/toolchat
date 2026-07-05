@@ -1,0 +1,24 @@
+{
+  "name": "toolchat",
+  "version": "1.0.0",
+  "dependencies": [
+    {
+      "name": "llama-cpp",
+      "default-features": false
+    },
+    "nlohmann-json",
+    "ftxui"
+  ],
+  "features": {
+    "vulkan": {
+      "description": "Vulkan GPU backend (bundled ggml built with GGML_VULKAN)",
+      "dependencies": [
+        {
+          "name": "llama-cpp",
+          "default-features": false,
+          "features": ["vulkan"]
+        }
+      ]
+    }
+  }
+}
