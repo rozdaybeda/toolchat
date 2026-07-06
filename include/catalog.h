@@ -5,6 +5,17 @@
 
 namespace toolchat {
 
+// Per-model llama parameter overrides from the manifest's optional "params"
+// object. Negative = not set (keep the AgentConfig default).
+struct ModelParams {
+    float temperature = -1;
+    float top_p       = -1;
+    float min_p       = -1;
+    int   top_k       = -1;
+    int   n_ctx       = -1;
+    int   n_cpu_moe   = -1;  // MoE expert layers kept on CPU (big-MoE on small VRAM)
+};
+
 // One entry in the model catalog. Catalog entries come from scripts/models.json
 // (downloadable); on-disk .gguf files not in the manifest are appended as extras
 // (repo empty → already present, can't be re-fetched).
@@ -16,6 +27,8 @@ struct ModelEntry {
     std::string dir;         // local subdir under models/
     std::string size;        // approximate size string, e.g. "2.5 GB"
     std::string desc;        // short description
+    std::string req;         // minimum hardware, e.g. "4 GB VRAM or 6 GB free RAM"
+    ModelParams params;      // per-model llama overrides (unset fields = -1)
     std::string local_path;  // models/<dir>/<file> (relative to CWD)
     bool        downloaded = false;  // whether local_path exists on disk
 };

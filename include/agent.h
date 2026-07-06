@@ -25,7 +25,11 @@ struct AgentConfig {
     int max_tokens   = 1024;   // generation cap per model turn
     float temperature = 0.3f;  // low → deterministic, reliable tool calls
     float top_p       = 0.8f;
+    float min_p       = 0.0f;  // 0 = disabled (some models, e.g. GLM, want 0.01)
     int top_k         = 20;
+    // MoE models only: keep the expert FFN tensors of the first n layers in
+    // system RAM instead of VRAM (llama.cpp's --n-cpu-moe). 0 = fully offload.
+    int n_cpu_moe     = 0;
     int max_tool_iters = 6;    // safety cap on tool-call rounds per query
     uint32_t seed     = 42;    // sampler RNG seed (vary for benchmarking)
     // Compute device to offload to, as an opaque ggml_backend_dev_t (from

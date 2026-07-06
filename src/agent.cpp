@@ -124,6 +124,20 @@ bool Agent::init(const AgentConfig& config, ToolRegistry registry) {
     if (config.device)
         model_params.devices = dev_list;
 
+    // MoE CPU offload (llama.cpp's --n-cpu-moe): keep the expert FFN tensors of
+    // the first n_cpu_moe layers in system RAM so a big MoE fits a small GPU.
+    // The pattern string and override array only need to outlive the load call.
+    std::string moe_pattern;
+    llama_model_tensor_buft_override buft_overrides[2] = {};
+    if (config.n_cpu_moe > 0) {
+        moe_pattern = "blk\\.(";
+        for (int i = 0; i < config.n_cpu_moe; ++i)
+            moe_pattern += (i ? "|" : "") + std::to_string(i);
+        moe_pattern += ")\\.ffn_(up|down|gate)_exps";
+        buft_overrides[0] = { moe_pattern.c_str(), ggml_backend_cpu_buffer_type() };
+        model_params.tensor_buft_overrides = buft_overrides;
+    }
+
     model_ = llama_model_load_from_file(config.model_path.c_str(), model_params);
     if (!model_) {
         last_error_ = "Failed to load model from: " + config.model_path;
@@ -174,6 +188,8 @@ bool Agent::init(const AgentConfig& config, ToolRegistry registry) {
     sampler_ = llama_sampler_chain_init(sparams);
     llama_sampler_chain_add(sampler_, llama_sampler_init_top_k(config.top_k));
     llama_sampler_chain_add(sampler_, llama_sampler_init_top_p(config.top_p, 1));
+    if (config.min_p > 0.0f)
+        llama_sampler_chain_add(sampler_, llama_sampler_init_min_p(config.min_p, 1));
     llama_sampler_chain_add(sampler_, llama_sampler_init_temp(config.temperature));
     llama_sampler_chain_add(sampler_, llama_sampler_init_dist(config.seed));
 

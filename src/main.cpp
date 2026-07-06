@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <filesystem>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 #ifdef _WIN32
@@ -36,6 +37,7 @@ static void print_usage(const char* program) {
               << "  -c, --ctx <n>         Context size (default: 4096)\n"
               << "  -g, --gpu-layers <n>  GPU layers to offload (default: 0, CPU only)\n"
               << "  -d, --device <n>      GPU device index (0 = first GPU, ...)\n"
+              << "      --n-cpu-moe <n>   Keep MoE experts of first n layers on CPU (big MoE, small VRAM)\n"
               << "  -i, --iters <n>       Max tool-call rounds per query (default: 6)\n"
               << "  -s, --seed <n>        Sampler RNG seed (default: 42)\n"
               << "      --think <mode>    Non-thinking prefill: auto|on|off (default: auto by arch)\n"
@@ -99,6 +101,65 @@ static std::vector<std::string> catalog_labels(const std::vector<ModelEntry>& ca
     std::vector<std::string> out;
     for (const auto& e : cat) out.push_back(catalog_label(e));
     return out;
+}
+
+// "temp 0.7, top-p 1, min-p 0.01, ctx 8192" — the set fields of a model's
+// manifest params; empty when the model has no overrides.
+static std::string params_summary(const ModelParams& p) {
+    std::ostringstream s;
+    auto add = [&](const char* label, auto v) {
+        if (v >= 0) s << (s.tellp() > 0 ? ", " : "") << label << " " << v;
+    };
+    add("temp",      p.temperature);
+    add("top-p",     p.top_p);
+    add("min-p",     p.min_p);
+    add("top-k",     p.top_k);
+    add("ctx",       p.n_ctx);
+    add("n-cpu-moe", p.n_cpu_moe);
+    return s.str();
+}
+
+// Detail blurb shown under the picker for the highlighted model: description,
+// minimum hardware requirements, and any per-model llama params, one line each
+// (lines with nothing to show are omitted).
+static std::string catalog_detail(const ModelEntry& e) {
+    std::string d = e.desc;
+    auto line = [&](const std::string& text) {
+        if (!text.empty()) d += (d.empty() ? "" : "\n") + text;
+    };
+    line(e.req.empty() ? "" : "Needs: " + e.req);
+    std::string ps = params_summary(e.params);
+    line(ps.empty() ? "" : "Params: " + ps);
+    return d;
+}
+
+static std::vector<std::string> catalog_details(const std::vector<ModelEntry>& cat) {
+    std::vector<std::string> out;
+    for (const auto& e : cat) out.push_back(catalog_detail(e));
+    return out;
+}
+
+// Overlay a chosen model's manifest params onto the config: tunables first reset
+// to `base` (defaults + CLI flags) so switching models never inherits a previous
+// model's overrides, then each set (>= 0) param is applied. Explicit CLI flags
+// win: -c keeps its n_ctx, --n-cpu-moe its layer count.
+static void apply_model_params(AgentConfig& config, const ModelEntry& e,
+                               const AgentConfig& base,
+                               bool cli_ctx_set, bool cli_moe_set) {
+    config.temperature = base.temperature;
+    config.top_p       = base.top_p;
+    config.min_p       = base.min_p;
+    config.top_k       = base.top_k;
+    config.n_ctx       = base.n_ctx;
+    config.n_cpu_moe   = base.n_cpu_moe;
+
+    const ModelParams& p = e.params;
+    if (p.temperature >= 0) config.temperature = p.temperature;
+    if (p.top_p       >= 0) config.top_p       = p.top_p;
+    if (p.min_p       >= 0) config.min_p       = p.min_p;
+    if (p.top_k       >= 0) config.top_k       = p.top_k;
+    if (p.n_ctx       >= 0 && !cli_ctx_set) config.n_ctx     = p.n_ctx;
+    if (p.n_cpu_moe   >= 0 && !cli_moe_set) config.n_cpu_moe = p.n_cpu_moe;
 }
 
 // Default selection: the first already-downloaded model, else 0.
@@ -196,8 +257,13 @@ static int choose_model_index(const std::vector<ModelEntry>& cat) {
         return -1;
     }
     std::cout << "Select a model:\n";
-    for (size_t i = 0; i < cat.size(); ++i)
+    for (size_t i = 0; i < cat.size(); ++i) {
         std::cout << "  " << (i + 1) << ") " << catalog_label(cat[i]) << "\n";
+        if (!cat[i].desc.empty()) std::cout << "       " << cat[i].desc << "\n";
+        if (!cat[i].req.empty())  std::cout << "       needs: " << cat[i].req << "\n";
+        std::string ps = params_summary(cat[i].params);
+        if (!ps.empty())          std::cout << "       params: " << ps << "\n";
+    }
     return prompt_choice("Model", (int)cat.size());
 }
 
@@ -248,6 +314,11 @@ static void print_status(const AgentConfig& config, const std::string& dev_label
                          std::ostream& log) {
     log << "Model:  " << fs::path(config.model_path).filename().string() << "\n";
     log << "Device: " << (dev_label.empty() ? config_device_label(config) : dev_label) << "\n";
+    log << "Params: temp " << config.temperature << ", top-p " << config.top_p;
+    if (config.min_p > 0) log << ", min-p " << config.min_p;
+    log << ", top-k " << config.top_k << ", ctx " << config.n_ctx;
+    if (config.n_cpu_moe > 0) log << ", n-cpu-moe " << config.n_cpu_moe;
+    log << "\n";
 }
 
 static void print_tools(const Agent& agent) {
@@ -267,6 +338,8 @@ int main(int argc, char* argv[]) {
     AgentConfig config;
     bool bench = false;    // machine-readable JSON output, one object per query
     bool menu  = false;    // force the interactive picker
+    bool cli_ctx_set = false;  // -c given: wins over a model's n_ctx override
+    bool cli_moe_set = false;  // --n-cpu-moe given: wins over a model's override
 
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
@@ -277,8 +350,12 @@ int main(int argc, char* argv[]) {
             config.n_threads = std::stoi(argv[++i]);
         } else if ((arg == "-c" || arg == "--ctx") && i + 1 < argc) {
             config.n_ctx = std::stoi(argv[++i]);
+            cli_ctx_set = true;
         } else if ((arg == "-g" || arg == "--gpu-layers") && i + 1 < argc) {
             config.n_gpu_layers = std::stoi(argv[++i]);
+        } else if (arg == "--n-cpu-moe" && i + 1 < argc) {
+            config.n_cpu_moe = std::stoi(argv[++i]);
+            cli_moe_set = true;
         } else if ((arg == "-d" || arg == "--device") && i + 1 < argc) {
             config.main_gpu = std::stoi(argv[++i]);
         } else if ((arg == "-i" || arg == "--iters") && i + 1 < argc) {
@@ -321,6 +398,12 @@ int main(int argc, char* argv[]) {
     // list; empty on the scriptable path, where print_status derives one).
     std::string cur_device_label;
 
+    // Snapshot of the tunables as set by defaults + CLI flags — the baseline that
+    // apply_model_params resets to on every model switch, so one model's manifest
+    // overrides never leak into the next.
+    const AgentConfig base_config = config;
+    bool params_applied = false;  // model params already applied (menu path)
+
     // Interactive setup: run when no model was given (or --menu was passed) and
     // we're not in bench mode. Scripted/bench usage always passes a model path,
     // so it skips the menu and behaves exactly as before. On a real terminal we
@@ -336,7 +419,7 @@ int main(int argc, char* argv[]) {
         int di = default_device_index(devices);
 
         if (interactive_terminal()) {
-            if (!run_setup_tui(catalog_labels(catalog),
+            if (!run_setup_tui(catalog_labels(catalog), catalog_details(catalog),
                                make_device_labels(devices, config.n_threads),
                                mi, di)) {
                 return 0;  // user cancelled
@@ -355,6 +438,8 @@ int main(int argc, char* argv[]) {
         // Fetch the model if it isn't on disk yet, then use its local path.
         if (!ensure_downloaded(catalog[mi], log)) return 1;
         model_path = catalog[mi].local_path;
+        apply_model_params(config, catalog[mi], base_config, cli_ctx_set, cli_moe_set);
+        params_applied = true;
         std::cout << "\n";
     }
 
@@ -364,6 +449,20 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     config.model_path = model_path;
+
+    // Scriptable path (model given on the command line): if the path is a
+    // catalog model, pick up its manifest params too (the menu path already
+    // applied them, flagged by params_applied).
+    if (!params_applied) {
+        std::error_code ec;
+        for (const auto& e : load_catalog()) {
+            if (!e.downloaded) continue;
+            if (fs::equivalent(fs::path(e.local_path), fs::path(model_path), ec) && !ec) {
+                apply_model_params(config, e, base_config, cli_ctx_set, cli_moe_set);
+                break;
+            }
+        }
+    }
 
     Agent agent;
     if (!load_agent(agent, config, log)) return 1;
@@ -417,13 +516,16 @@ int main(int argc, char* argv[]) {
                 if (interactive_terminal()) {
                     if (catalog.empty()) std::cerr << "No models available.\n";
                     else mi = tui_menu("Select model", catalog_labels(catalog),
-                                       default_model_index(catalog));
+                                       default_model_index(catalog),
+                                       catalog_details(catalog));
                 } else {
                     mi = choose_model_index(catalog);
                 }
                 // Fetch on demand, then reload.
                 if (mi >= 0 && ensure_downloaded(catalog[mi], log)) {
                     config.model_path = catalog[mi].local_path;
+                    apply_model_params(config, catalog[mi], base_config,
+                                       cli_ctx_set, cli_moe_set);
                     load_agent(agent, config, log);
                     print_status(config, cur_device_label, log);
                     std::cout << "\n";

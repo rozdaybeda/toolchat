@@ -8,7 +8,8 @@
       "file": "Qwen3.5-4B-Q4_K_M.gguf",
       "dir": "Qwen3.5-4B-Q4_K_M",
       "size": "2.7 GB",
-      "desc": "RECOMMENDED — best tool calling (needs llama.cpp b9871+)"
+      "desc": "RECOMMENDED — best tool calling (needs llama.cpp b9871+)",
+      "req": "4 GB VRAM or 6 GB free RAM"
     },
     {
       "key": "qwen35-2b",
@@ -17,7 +18,8 @@
       "file": "Qwen3.5-2B-Q4_K_M.gguf",
       "dir": "Qwen3.5-2B-Q4_K_M",
       "size": "1.5 GB",
-      "desc": "Lighter Qwen3.5 for weaker CPUs (needs llama.cpp b9871+)"
+      "desc": "Lighter Qwen3.5 for weaker CPUs (needs llama.cpp b9871+)",
+      "req": "2 GB VRAM or 4 GB free RAM"
     },
     {
       "key": "qwen35-0.8b",
@@ -26,7 +28,38 @@
       "file": "Qwen3.5-0.8B-Q4_K_M.gguf",
       "dir": "Qwen3.5-0.8B-Q4_K_M",
       "size": "0.6 GB",
-      "desc": "Smallest / fastest Qwen3.5 (needs llama.cpp b9871+)"
+      "desc": "Smallest / fastest Qwen3.5 (needs llama.cpp b9871+)",
+      "req": "1 GB VRAM or 2 GB free RAM"
+    },
+    {
+      "key": "nemotron3-4b",
+      "name": "Nemotron 3 Nano 4B",
+      "repo": "nvidia/NVIDIA-Nemotron-3-Nano-4B-GGUF",
+      "file": "NVIDIA-Nemotron3-Nano-4B-Q4_K_M.gguf",
+      "dir": "NVIDIA-Nemotron3-Nano-4B-Q4_K_M",
+      "size": "2.8 GB",
+      "desc": "NVIDIA Nemotron 3 Nano — strong tool use, low hallucination (needs llama.cpp b9871+)",
+      "req": "4 GB VRAM or 6 GB free RAM",
+      "params": {
+        "temperature": 0.6,
+        "top_p": 0.95
+      }
+    },
+    {
+      "key": "glm47-flash",
+      "name": "GLM-4.7-Flash",
+      "repo": "unsloth/GLM-4.7-Flash-GGUF",
+      "file": "GLM-4.7-Flash-UD-Q3_K_XL.gguf",
+      "dir": "GLM-4.7-Flash-UD-Q3_K_XL",
+      "size": "13.8 GB",
+      "desc": "30B-A3B MoE, top-tier tool calling — needs ~16 GB VRAM or MoE CPU offload",
+      "req": "16 GB VRAM, or 8 GB VRAM + 16 GB RAM (MoE offload), or 24 GB free RAM (CPU)",
+      "params": {
+        "temperature": 0.7,
+        "top_p": 1.0,
+        "min_p": 0.01,
+        "n_ctx": 8192
+      }
     },
     {
       "key": "qwen3-4b",
@@ -35,7 +68,8 @@
       "file": "Qwen3-4B-Q4_K_M.gguf",
       "dir": "Qwen3-4B-Q4_K_M",
       "size": "2.5 GB",
-      "desc": "Max accuracy (100% on the benchmark); works on any recent llama.cpp"
+      "desc": "Max accuracy (100% on the benchmark); works on any recent llama.cpp",
+      "req": "4 GB VRAM or 6 GB free RAM"
     },
     {
       "key": "qwen25-3b",
@@ -44,7 +78,8 @@
       "file": "Qwen2.5-3B-Instruct-Q4_K_M.gguf",
       "dir": "Qwen2.5-3B-Instruct-Q4_K_M",
       "size": "1.9 GB",
-      "desc": "Fast, but over-eager (calls tools when it shouldn't)"
+      "desc": "Fast, but over-eager (calls tools when it shouldn't)",
+      "req": "2 GB VRAM or 4 GB free RAM"
     },
     {
       "key": "qwen25-1.5b",
@@ -53,7 +88,8 @@
       "file": "Qwen2.5-1.5B-Instruct-Q4_K_M.gguf",
       "dir": "Qwen2.5-1.5B-Instruct-Q4_K_M",
       "size": "1.0 GB",
-      "desc": "Speed/accuracy sweet spot (90.5%, 4x faster than Qwen3-4B)"
+      "desc": "Speed/accuracy sweet spot (90.5%, 4x faster than Qwen3-4B)",
+      "req": "1.5 GB VRAM or 3 GB free RAM"
     },
     {
       "key": "qwen25-0.5b",
@@ -62,7 +98,8 @@
       "file": "Qwen2.5-0.5B-Instruct-Q4_K_M.gguf",
       "dir": "Qwen2.5-0.5B-Instruct-Q4_K_M",
       "size": "0.4 GB",
-      "desc": "Fastest, least reliable tool calls"
+      "desc": "Fastest, least reliable tool calls",
+      "req": "1 GB VRAM or 2 GB free RAM"
     },
     {
       "key": "gemma4-e4b",
@@ -71,7 +108,8 @@
       "file": "gemma-4-E4B-it-Q4_K_M.gguf",
       "dir": "gemma-4-E4B-it-Q4_K_M",
       "size": "2.9 GB",
-      "desc": "Google Gemma 4 (~4B), native function calling (needs llama.cpp b9871+)"
+      "desc": "Google Gemma 4 (~4B), native function calling (needs llama.cpp b9871+)",
+      "req": "4 GB VRAM or 6 GB free RAM"
     },
     {
       "key": "gemma4-e2b",
@@ -80,7 +118,8 @@
       "file": "gemma-4-E2B-it-Q4_K_M.gguf",
       "dir": "gemma-4-E2B-it-Q4_K_M",
       "size": "1.5 GB",
-      "desc": "Google Gemma 4 (~2B), smaller edge model (needs llama.cpp b9871+)"
+      "desc": "Google Gemma 4 (~2B), smaller edge model (needs llama.cpp b9871+)",
+      "req": "2 GB VRAM or 4 GB free RAM"
     },
     {
       "key": "gemma3-4b",
@@ -89,7 +128,8 @@
       "file": "gemma-3-4b-it-Q4_K_M.gguf",
       "dir": "gemma-3-4b-it-Q4_K_M",
       "size": "2.5 GB",
-      "desc": "Google Gemma 3 (4B), prior generation (prompt-based tool calling)"
+      "desc": "Google Gemma 3 (4B), prior generation (prompt-based tool calling)",
+      "req": "4 GB VRAM or 6 GB free RAM"
     },
     {
       "key": "gemma3-1b",
@@ -98,7 +138,8 @@
       "file": "gemma-3-1b-it-Q4_K_M.gguf",
       "dir": "gemma-3-1b-it-Q4_K_M",
       "size": "0.8 GB",
-      "desc": "Google Gemma 3 (1B), smallest prior-gen edge model"
+      "desc": "Google Gemma 3 (1B), smallest prior-gen edge model",
+      "req": "1 GB VRAM or 2 GB free RAM"
     }
   ]
 }
